@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bus.dao.MessageDao">
+
+    <!--查询所有用户
+    sex是int型要  <if test="buyprice!=null">这样写-->
+    <!--返回类型千万别写错，要不然不报错，可以返回，但是你看不到数据-->
+    <select id="queryAllMessage"  resultType="bus.domian.Message">
+    select * from gift_message
+    <where>
+        <if test="giftnumber!=null and giftnumber!=''">
+          and giftnumber like concat("%",#{giftnumber},"%")
+        </if>
+        <if test="gifttype!=null and gifttype!=''">
+            and gifttype like concat("%",#{gifttype},"%")
+        </if>
+        <if test="color!=null and color!=''">
+            and color like concat("%",#{color},"%")
+        </if>
+        <if test="giftname!=null and giftname!=''">
+            and giftname like concat("%",#{giftname},"%")
+        </if>
+        <if test="describr!=null and describr!=''">
+            and describr like concat("%",#{describr},"%")
+        </if>
+    </where>
+        order by createtime desc
+     </select>
+
+
+    <!--发现一个问题，当updateOneRole正确时候，找到这里，里面if判断出问题是不报错的  <if test="roleid!=null">-->
+    <update id="updateCustomer" parameterType="Customer">
+        UPDATE gift_customer
+        SET identity = #{identity},custname = #{custname},address = #{address},sex = #{sex},phone = #{phone},career = #{career},createtime =#{createtime}
+        <where>
+            <if test="identity!=null">
+                identity = #{identity}
+            </if>
+        </where>
+    </update>
+
+    <update id="resetUserPwd" parameterType="User">
+        UPDATE gift_uses
+        SET password = #{password}
+        <where>
+            <if test="userid!=null">
+                userid = #{userid}
+            </if>
+        </where>
+    </update>
+
+    <!--根据用户id删除-->
+    <delete id="deleteMessage">
+    delete from gift_message where giftnumber = #{giftnumber}
+    </delete>
+
+  <!--  /*匹配出礼品名和类型*/-->
+    <select id="queryOneMessage" resultType="bus.domian.Message">
+         select * from gift_message where
+        giftname=#{giftname} and gifttype=#{gifttype} and color = #{color}
+    </select>
+
+    <!--插入一条礼品信息数据now()-->
+    <insert id="insert" parameterType="Message">
+        insert into gift_message(giftnumber,giftname,gifttype,color,buyprice,rentprice,describr,s_number,carimg,createtime)
+        values(#{giftnumber},#{giftname},#{gifttype},#{color},#{buyprice},#{rentprice},#{describr},#{s_number},#{carimg},#{createtime})
+    </insert>
+
+    <!--查出有没有相同的-->
+    <update id="updateOneMessage" parameterType="Message">
+        UPDATE gift_message
+        SET s_number = #{s_number},createtime=#{createtime} where giftname=#{giftname} and gifttype=#{gifttype} and color=#{color}
+    </update>
+
+
+   <!-- /*根据礼品型号查询*/-->
+    <select id="queryMessageByGiftNumber" resultType="bus.domian.Message">
+        select * from gift_message where
+        giftnumber=#{giftnumber}
+    </select>
+
+    <update id="updateMessage" parameterType="Message">
+        UPDATE gift_message
+        SET giftname = #{giftname},gifttype = #{gifttype},color = #{color},buyprice = #{buyprice},rentprice = #{rentprice},describr = #{describr},s_number =#{s_number},carimg =#{carimg},createtime =#{createtime}
+        <where>
+            <if test="giftnumber!=null">
+                giftnumber = #{giftnumber}
+            </if>
+        </where>
+    </update>
+  <!--  /*下单库存数量的变动*/-->
+    <update id="updateMessageNumber" parameterType="Message">
+        UPDATE gift_message
+        SET s_number = #{s_number} where giftnumber=#{giftnumber}
+    </update>
+
+</mapper>

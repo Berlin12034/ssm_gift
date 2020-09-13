@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bus.dao.CustomerDao">
+
+    <!--查询所有用户
+    sex是int型-->
+    <select id="queryAllCustomer"  resultType="Customer">
+    select * from gift_customer
+    <where>
+        <if test="identity!=null and identity!=''">
+          and identity like concat("%",#{identity},"%")
+        </if>
+        <if test="custname!=null and custname!=''">
+            and custname like concat("%",#{custname},"%")
+        </if>
+        <if test="address!=null and address!=''">
+            and address like concat("%",#{address},"%")
+        </if>
+        <if test="sex!=null">
+            and sex like=#{sex}
+        </if>
+        <if test="phone!=null and phone!=''">
+            and phone like concat("%",#{phone},"%")
+        </if>
+        <if test="career!=null and career!=''" >
+            and career like concat("%",#{career},"%")
+        </if>
+    </where>
+        order by createtime desc
+     </select>
+
+    <!--插入一条角色数据now()-->
+    <insert id="insert" parameterType="Customer" >
+		insert into gift_customer(identity,custname,address,sex,phone,career,createtime)
+		values(#{identity},#{custname},#{address},#{sex},#{phone},#{career},#{createtime})
+	</insert>
+
+    <!--发现一个问题，当updateOneRole正确时候，找到这里，里面if判断出问题是不报错的  <if test="roleid!=null">-->
+    <update id="updateCustomer" parameterType="Customer">
+        UPDATE gift_customer
+        SET identity = #{identity},custname = #{custname},address = #{address},sex = #{sex},phone = #{phone},career = #{career},createtime =#{createtime}
+        <where>
+            <if test="identity!=null">
+                identity = #{identity}
+            </if>
+        </where>
+    </update>
+
+    <update id="resetUserPwd" parameterType="User">
+        UPDATE gift_uses
+        SET password = #{password}
+        <where>
+            <if test="userid!=null">
+                userid = #{userid}
+            </if>
+        </where>
+    </update>
+
+    <!--根据用户id删除-->
+    <delete id="deleteCustomer">
+    delete from gift_customer where identity = #{identity}
+    </delete>
+   <!-- /*根据客户身份证号查询信息，用在判断这个客户是否存在，在出售表哪里*/-->
+    <select id="queryCustomerOne" resultType="bus.domian.Customer">
+        select * from gift_customer where
+        identity=#{identity}
+
+    </select>
+
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+<!--配置组件扫描,要不然@Controller层不起作用-->
+    <context:component-scan base-package="sys.controller"/>
+    <context:component-scan base-package="bus.controller"/>
+    <context:component-scan base-package="stat.controller"/>
+    <!-- 处理器映射器，处理器适配器-->
+    <mvc:annotation-driven/>
+<!-- 视图解析器-->
+    <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+        <!--终于解决了千万不能加/webapp/   因为默认就跳到webapp下面了-->
+        <property name="templateLoaderPath" value="/WEB-INF/"/>
+    </bean>
+    <bean id="htmlviewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+        <property name="suffix" value=".html" />
+        <property name="order" value="0"></property>
+        <property name="contentType" value="text/html;charset=UTF-8"></property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 这里的配置我的理解是自动给后面action的方法return的字符串加上前缀和后缀，变成一个 可用的url地址 -->
+        <property name="prefix" value="/WEB-INF/" />
+        <property name="suffix" value=".jsp" />
+        <property name="viewClass" value="org.springframework.web.servlet.view.InternalResourceView"/> <!-- 不能用jstl的那个 -->
+        <property name="contentType" value="text/html;charset=UTF-8"/>
+        <property name="order" value="0"></property>
+    </bean>
+    <!-- 配置多媒体文件解析器 -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 设定默认编码 -->
+        <property name="defaultEncoding" value="UTF-8"></property>
+        <!-- 设定文件上传的最大值20MB， 2*1024*1024*10 -->
+        <property name="maxUploadSize" value="20971520"></property>
+        <!--resolveLazily属性启用是为了推迟文件解析，以便在UploadAction 中捕获文件大小异常-->
+        <property name="resolveLazily" value="true"/>
+    </bean>
+<!-- 释放静态资源-->
+    <mvc:default-servlet-handler/>
+    <!-- 引入静态资源 -->
+    <mvc:annotation-driven />
+    <mvc:resources mapping="/js/**" location="/js/**"/>
+
+
+</beans>

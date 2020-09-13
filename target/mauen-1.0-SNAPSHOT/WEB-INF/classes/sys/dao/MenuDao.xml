@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sys.dao.MenuDao">
+    <select id="findById" parameterType="int" resultType="User">
+     select * from t_user where uid=#{uid}
+    </select>
+    <select id="findAll" parameterType="items" resultType="items">
+/*parameterType  这里是查询一个类  所以写items，也是返回值类型*/
+        select * from t_user
+    </select>
+
+
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM t_user WHERE uid=#{uid}
+    </delete>
+    <!--用户登陆-->
+    <select id="login"  resultType="User">
+     select * from gift_uses where
+     loginname=#{loginname} and password=#{password}
+    </select>
+   <!--插入一条菜单栏-->
+    <insert id="insert" parameterType="Menu" >
+		insert into sys_menus(id,pid,title,href,spread,target,icon,available)
+		values(#{id},#{pid},#{title},#{href},#{spread},#{target},#{icon},#{available})
+	</insert>
+   <!--这条sql可以给几个方法用查关键字title的
+   2查询所有的
+   3查id的
+   用if条件来-->
+    <!--查询所有菜单-->
+    <!--#{title}当后台什么也不给titlle时候，这里就是查询所有，前面的查询也给setavaliable=1了，所以这里查的也是avaliable等于1的-->
+   <!-- 加上pid=#{id}的意思是点击到父节点时候，把id和pid都查出来-->
+    <!--and之后语法要留有空格 无论是括号还是接着字段-->
+    <select id="queryAllMenu"  resultType="sys.domian.Menu">
+     select * from sys_menus
+      <where>
+      <if test="title!=null and title!=''">
+       and title like concat("%",#{title},"%")
+      </if>
+      <if test="available!=null">
+          and available=#{available}
+      </if>
+      <if test="id!=null">
+          and (id=#{id} or pid=#{id})
+      </if>
+      </where>
+    </select>
+<!--更新选定id菜单-->
+    <update id="updateAllMenu" parameterType="Menu">
+        UPDATE sys_menus
+        SET pid = #{pid}, title = #{title}, href = #{href}, spread=#{spread}, target =#{target}, icon =#{icon}, available =#{available}
+        <where>
+            <if test="id!=null">
+                id = #{id}
+            </if>
+        </where>
+    </update>
+
+
+    <!--根据pid查询菜单数量-->
+    <select id="queryMenuByPid" resultType="Integer">
+        select count(1) from sys_menus where pid=#{id}
+    </select>
+
+    <!--根据菜单id删除-->
+    <delete id="deleteMenu">
+    delete from sys_menus where id = #{id}
+    </delete>
+
+    <!--根据菜单id删除sys_role_menu里面的数据-->
+    <delete id="deleteRoleMenuByMid">
+        delete from sys_role_menu where mid=#{mid}
+    </delete>
+
+    <!--根据角色id查询菜单-->
+    <!--要查询t1表相关的数据
+    t1就是sys_menus-->
+    <select id="queryMenuByRoleId" resultType="Menu">
+        select t1.* from
+        sys_menus t1 inner join sys_role_menu t2 on(t1.id=t2.mid) where
+        t2.rid=#{rid} and t1.available=#{available}
+    </select>
+
+    <!--根据用户id查询菜单 t1是sys_menus t2是sys_role_menu  t3是sys_role_user-->
+    <select id="queryMenuByUid" resultType="Menu">
+        select distinct t1.* from
+        sys_menus t1 inner join sys_role_menu t2 inner join sys_role_user t3
+        on(t1.id=t2.mid and t2.rid=t3.rid)
+        where t3.uid=#{uid} and t1.available=#{available}
+    </select>
+</mapper>

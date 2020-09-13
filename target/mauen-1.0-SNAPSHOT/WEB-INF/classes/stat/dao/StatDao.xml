@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="stat.dao.StatDao">
+<!--客户地区查询-->
+
+
+    <select id="queryloadCustomerAreaStat" resultType="stat.domian.BaseEntity">
+        select address as name,count(1) as value from gift_customer GROUP by address
+    </select>
+   <!-- /*加载业务员年度数据统计数据*/-->
+    <select id="queryOpernameYearGradeStat" resultType="stat.domian.BaseEntity">
+       select opername as name,sum(price) as value from gift_sale
+       where DATE_FORMAT(createtime,"%Y")=#{value} GROUP by opername
+    </select>
+
+    <!-- /*加载公司年月季度数据统计数据*/-->
+    <select id="queryCompanyYearGradeStat" resultType="Double">
+        select sum(price) from  gift_sale where DATE_FORMAT(createtime,"%Y%m")=concat(#{y},#{moth})
+    </select>
+</mapper>

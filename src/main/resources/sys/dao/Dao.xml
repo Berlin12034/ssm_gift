@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sys.dao.Dao">
+
+    <select id="findAll" parameterType="items" resultType="items">
+/*parameterType  这里是查询一个类  所以写items，也是返回值类型*/
+        select * from t_user
+    </select>
+
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM t_user WHERE uid=#{uid}
+    </delete>
+<!--用户登陆-->
+    <select id="login"  resultType="User">
+     select * from gift_uses where
+     loginname=#{loginname} and password=#{password}
+    </select>
+
+    <!--查询所有用户
+    sex是int型-->
+    <select id="queryAllUser"  resultType="User">
+    select * from gift_uses
+    <where>
+        <if test="name!=null and name!=''">
+          and name like concat("%",#{name},"%")
+        </if>
+        <if test="loginname!=null and loginname!=''">
+            and loginname like concat("%",#{loginname},"%")
+        </if>
+        <if test="identity!=null and identity!=''">
+            and identity like concat("%",#{identity},"%")
+        </if>
+        <if test="address!=null and address!=''">
+            and address like concat("%",#{address},"%")
+        </if>
+        <if test="phone!=null and phone!=''">
+            and phone like concat("%",#{phone},"%")
+        </if>
+        <if test="sex!=null">
+            and sex=#{sex}
+        </if>
+        and type!=1
+    </where>
+     </select>
+
+    <!--插入一条角色数据now()-->
+    <insert id="insert" parameterType="User" >
+		insert into gift_uses(userid,loginname,password,identity,name,sex,phone,career,createtime,type,address,available)
+		values(#{userid},#{loginname},#{password},#{identity},#{name},#{sex},#{phone},#{career},now(),#{type},#{address},#{available})
+	</insert>
+
+    <!--发现一个问题，当updateOneRole正确时候，找到这里，里面if判断出问题是不报错的  <if test="roleid!=null">-->
+    <update id="updateOneUser" parameterType="User">
+        UPDATE gift_uses
+        SET loginname = #{loginname},identity = #{identity},name = #{name},sex = #{sex},phone = #{phone},career = #{career},createtime =now(),address = #{address},available = #{available}
+        <where>
+            <if test="userid!=null">
+                userid = #{userid}
+            </if>
+        </where>
+    </update>
+
+    <update id="resetUserPwd" parameterType="User">
+        UPDATE gift_uses
+        SET password = #{password}
+        <where>
+            <if test="userid!=null">
+                userid = #{userid}
+            </if>
+        </where>
+    </update>
+
+    <!--根据用户id删除-->
+    <delete id="deleteUser">
+    delete from gift_uses where userid = #{userid}
+    </delete>
+    <!--保存用户选中分配的角色-->
+    <insert id="insertUserRole" parameterType="User">
+     insert into sys_role_user(uid,rid) value (#{uid},#{rid})
+    </insert>
+
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--dao层配置文件开始-->
+    <!--Spring整合MyBatis框架-->
+    <!--配置连接池-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <import resource="classpath:application-task.xml"></import>
+    <!-- 数据源 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!--设置超时时间5秒-->
+        <property name="loginTimeout" value="50000"></property>
+
+    </bean>
+    <!--配置SqlSessionFactory工厂-->
+    <bean id="sqlSessonFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 把所有这个包下的实体在dao.xml中可以直接用resultType="items"  直接把实体的第一个大写字母当小写-->
+        <property name="typeAliasesPackage" value="sys.domian,bus.domian,stat.domian"></property>
+
+        <!-- 自动扫描mappers.xml文件 -->
+       <!-- <property name="mapperLocations" value="classpath:mapper/*.xml" />
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>-->
+    </bean>
+    <!--配置dao接口所在包  Spring会自动查找其下的类   读取sys_dao.xml文件-->
+    <bean id="mapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--,隔开来写-->
+        <property name="basePackage" value="sys.dao,bus.dao,stat.dao"/>
+
+    </bean>
+
+    <!--dao层配置文件完成-->
+
+<!-- service层配置开始-->
+    <!--配置扫面@Service注解-->
+    <!-- 组件扫描   搞了半天就是配置到com.service的，最后到切面里找不到bean com.service.itemsService里的方法-->
+    <context:component-scan base-package="sys.serviceimpl"/>
+    <context:component-scan base-package="bus.serviceimpl"/>
+    <context:component-scan base-package="stat.serviceimpl"/>
+<!--所以找不到就看扫描 <context:component-scan base-package="com.serviceimpl有没有配置错确定是哪个包"/>-->
+     <bean id="TransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+         <property name="dataSource" ref="dataSource"></property>
+     </bean>
+         <!--配置事务通知-->
+         <tx:advice id="txAdvice" transaction-manager="TransactionManager">
+             <tx:attributes>
+                 <tx:method name="save*" propagation="REQUIRED"/>
+                 <tx:method name="update*" propagation="REQUIRED"/>
+                 <tx:method name="delete*" propagation="REQUIRED"/>
+                 <tx:method name="reset*" propagation="REQUIRED"/>
+                 <tx:method name="add*" propagation="REQUIRED"/>
+                 <tx:method name="find*" read-only="true"/>
+                 <tx:method name="*" propagation="REQUIRED"/>
+             </tx:attributes>
+         </tx:advice>
+<!-- 配置切面aop-->
+         <aop:config>
+             <aop:pointcut id="pointcut1" expression="execution(* sys.serviceimpl.UserServiceimpl.*(..))"/>
+             <aop:pointcut id="pointcut2" expression="execution(* bus.serviceimpl.*.*(..))"/>
+             <aop:pointcut id="pointcut3" expression="execution(* bus.serviceimpl.*.*(..))"/>
+             <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut1"/>
+             <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut2"/>
+             <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut3"/>
+
+         </aop:config>
+<!-- service配置结束层-->
+
+
+</beans>
